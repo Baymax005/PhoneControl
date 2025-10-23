@@ -1,21 +1,22 @@
 @echo off
+chcp 65001 >nul
 title PhoneControl - Main Launcher
 color 0A
 cls
 
 echo.
-echo ╔═══════════════════════════════════════════════════════╗
-echo ║         📱 PHONECONTROL - MAIN MENU                  ║
-echo ╚═══════════════════════════════════════════════════════╝
+echo ========================================================
+echo           PHONECONTROL - MAIN MENU                  
+echo ========================================================
 echo.
-echo  [1] 📡 Wireless ADB Connector (Local Control)
-echo  [2] 🌐 Web Exploit Server
-echo  [3] 🚀 Mport - "Your Port to the World" (In Development)
+echo  [1] Wireless ADB Connector (Local Control)
+echo  [2] Web Exploit Server
+echo  [3] Mport - "Your Port to the World" (In Development)
 echo.
-echo  [4] 📚 View Documentation
-echo  [5] ⚙️  Project Structure
+echo  [4] View Documentation
+echo  [5] Project Structure
 echo.
-echo  [0] ❌ Exit
+echo  [0] Exit
 echo.
 
 set /p choice="Choose option (0-5): "
@@ -56,37 +57,37 @@ goto start
 :tunnel
 cls
 echo.
-echo ╔═══════════════════════════════════════════════════════╗
-echo ║   🚀 MPORT - "YOUR PORT TO THE WORLD"                ║
-echo ╚═══════════════════════════════════════════════════════╝
+echo ========================================================
+echo     MPORT - "YOUR PORT TO THE WORLD"                
+echo ========================================================
 echo.
-echo Status: 🏗️  IN DEVELOPMENT
+echo Status: IN DEVELOPMENT
 echo.
 echo Building production-level tunneling service from scratch!
 echo.
 echo What is Mport?
-echo  • Like ngrok, but works in Pakistan
-echo  • Free for students (GitHub Student Pack)
-echo  • Multi-user support with web dashboard
-echo  • Production-ready security
+echo  * Like ngrok, but works in Pakistan
+echo  * Free for students (GitHub Student Pack)
+echo  * Multi-user support with web dashboard
+echo  * Production-ready security
 echo.
 echo Features (Planned):
-echo  ✅ Custom tunnel protocol
-echo  ✅ Server + Client architecture  
-echo  ✅ Multi-user support
-echo  ✅ Web dashboard
-echo  ✅ Production-ready
+echo  - Custom tunnel protocol
+echo  - Server + Client architecture  
+echo  - Multi-user support
+echo  - Web dashboard
+echo  - Production-ready
 echo.
 cd Mport
 if exist main.py (
     python main.py
 ) else (
-    echo No files yet. Ready to start Phase 1!
+    echo Files Created: server/tunnel_server.py, client/tunnel_client.py
     echo.
     echo Next Steps:
     echo  1. Read: ROADMAP.md
     echo  2. Read: BRANDING.md
-    echo  3. Start Week 1 - Basic TCP Tunnel
+    echo  3. Continue Week 1 - Basic TCP Tunnel
 )
 cd ..
 pause
