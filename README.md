@@ -56,7 +56,7 @@ PhoneControl/
 
 ### What is Mport?
 A production-ready tunneling service (like ngrok) that:
-- ✅ Works in Pakistan (bypasses ISP blocks)
+- ✅ Works in restricted networks (e.g., Pakistan)
 - ✅ Free for students (GitHub Student Pack)
 - ✅ Multi-user support
 - ✅ Web dashboard
