@@ -1,0 +1,96 @@
+
+ ███╗   ███╗██████╗  ██████╗ ██████╗ ████████╗
+ ████╗ ████║██╔══██╗██╔═══██╗██╔══██╗╚══██╔══╝
+ ██╔████╔██║██████╔╝██║   ██║██████╔╝   ██║   
+ ██║╚██╔╝██║██╔═══╝ ██║   ██║██╔══██╗   ██║   
+ ██║ ╚═╝ ██║██║     ╚██████╔╝██║  ██║   ██║   
+ ╚═╝     ╚═╝╚═╝      ╚═════╝ ╚═╝  ╚═╝   ╚═╝   
+                                                
+    "Your Port to the World"
+    
+═══════════════════════════════════════════════
+
+Welcome to Mport - Production-Level Tunneling Service
+
+═══════════════════════════════════════════════
+
+🎯 What is Mport?
+
+A tunneling service that works EVERYWHERE - even where
+others are blocked (Cloudflare, ngrok, etc.)
+
+Perfect for:
+  • Students learning development
+  • Developers in restricted regions  
+  • Anyone needing reliable remote access
+  • ADB wireless connection from anywhere
+
+═══════════════════════════════════════════════
+
+✨ Key Features:
+
+  ✅ Works in Pakistan (bypasses ISP blocks)
+  ✅ Free for students (GitHub Student Pack)
+  ✅ Production-grade security (TLS/SSL)
+  ✅ Multi-user support
+  ✅ Web dashboard
+  ✅ Auto-reconnect
+  ✅ TCP/HTTP tunnels
+  ✅ Custom domains
+  ✅ Usage analytics
+
+═══════════════════════════════════════════════
+
+📅 Development Timeline: 12 Weeks
+
+Phase 1 (Week 1-2):   Basic TCP tunnel
+Phase 2 (Week 3-4):   Security & reliability  
+Phase 3 (Week 5-6):   Multi-user support
+Phase 4 (Week 7-8):   Web dashboard
+Phase 5 (Week 9-12):  Production ready
+
+═══════════════════════════════════════════════
+
+💰 Cost: $0 for 2+ years!
+
+Using GitHub Student Pack:
+  • DigitalOcean: $200 credit
+  • Namecheap: Free domain
+  • Let's Encrypt: Free SSL
+
+═══════════════════════════════════════════════
+
+🚀 Current Status: Phase 1 - Planning Complete!
+
+Next Steps:
+  1. Read: ROADMAP.md (12-week plan)
+  2. Read: BRANDING.md (project vision)
+  3. Start coding: server/tunnel_server.py
+
+═══════════════════════════════════════════════
+
+📚 Documentation:
+
+  • README.md - Project overview
+  • ROADMAP.md - Development plan
+  • BRANDING.md - Brand identity
+  • requirements.txt - Dependencies
+
+═══════════════════════════════════════════════
+
+🎓 What You'll Learn:
+
+  ✅ Network programming (sockets, protocols)
+  ✅ Async programming (asyncio)
+  ✅ System design (scalability, reliability)
+  ✅ Security (TLS, authentication)
+  ✅ DevOps (Docker, CI/CD)
+  ✅ Full-stack development
+
+═══════════════════════════════════════════════
+
+Let's build something amazing! 💪
+
+Mport - Your Port to the World 🌍
+
+═══════════════════════════════════════════════

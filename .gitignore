@@ -1,0 +1,80 @@
+# Device-specific config
+device_config.json
+wireless_devices.json
+connection_qr.png
+
+# Screenshots and recordings
+*.png
+*.mp4
+*.jpg
+*.jpeg
+screenshot_*.png
+stealth_*.png
+recording.mp4
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# Secrets & Config
+.env
+*.pem
+*.key
+cert.pem
+config.yaml
+.cloudflared/
+frpc.toml
+
+# Temporary files
+*.tmp
+*.bak
+start_*.bat
+
+# Node modules (for future web dashboard)
+node_modules/
+package-lock.json
+
+# Archived files
+archived/
+
