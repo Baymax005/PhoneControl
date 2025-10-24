@@ -1,15 +1,15 @@
 """
 Mport Tunnel Server - "Your Port to the World"
-Phase 1, Week 1 Day 2: SIMPLIFIED - One tunnel per connection
+Phase 1, Week 1 Day 3: Persistent client with multiple tunnels
 
-This is the server that runs on your VPS (or localhost for testing).
-It accepts connections from:
-1. Internet users (port 8080) - people accessing your tunneled service
-2. Mport clients (port 8081) - your PC that forwards to local phone
+Architecture:
+- Control connection: Client stays connected, receives tunnel requests
+- Tunnel connections: Client spawns new connections for each tunnel
 """
 
 import asyncio
 import logging
+import json
 from datetime import datetime
 from colorama import Fore, Style, init
 
@@ -25,16 +25,18 @@ logger = logging.getLogger(__name__)
 
 class MportServer:
     """
-    Simple Mport server - one client connection handles one user connection.
-    Week 1: Basic proof of concept.
+    Production-ready Mport server.
+    - Persistent client connections
+    - Multiple simultaneous tunnels per client
     """
     
     def __init__(self, public_port=8080, control_port=8081):
         self.public_port = public_port
         self.control_port = control_port
-        self.waiting_clients = asyncio.Queue()  # Queue of available clients
+        self.clients = {}  # {client_id: {reader, writer, tunnel_queue}}
+        self.active_tunnels = {}  # {tunnel_id: {user_addr, client_id}}
         
-        logger.info(f"{Fore.CYAN}Initializing Mport Server{Style.RESET_ALL}")
+        logger.info(f"{Fore.CYAN}Initializing Mport Server (Day 3){Style.RESET_ALL}")
         logger.info(f"Public port: {public_port}")
         logger.info(f"Control port: {control_port}")
     
@@ -66,16 +68,29 @@ class MportServer:
         logger.info(f"{Fore.GREEN}[PUBLIC] New connection from {addr}{Style.RESET_ALL}")
         
         try:
-            # Wait for an available client
-            logger.info(f"{Fore.YELLOW}[PUBLIC] Waiting for available Mport client...{Style.RESET_ALL}")
-            client_reader, client_writer = await self.waiting_clients.get()
+            # Check if any client is available
+            if not self.clients:
+                logger.warning(f"{Fore.RED}[PUBLIC] No clients connected!{Style.RESET_ALL}")
+                user_writer.write(b"ERROR: No Mport clients available\n")
+                await user_writer.drain()
+                return
             
-            logger.info(f"{Fore.GREEN}[PUBLIC] Got client! Starting tunnel for {addr}{Style.RESET_ALL}")
+            # Get first available client
+            client_id = list(self.clients.keys())[0]
+            client_info = self.clients[client_id]
+            
+            logger.info(f"{Fore.GREEN}[PUBLIC] Routing to {client_id}{Style.RESET_ALL}")
+            
+            # Wait for client to create tunnel connection
+            logger.info(f"{Fore.YELLOW}[PUBLIC] Waiting for tunnel from {client_id}...{Style.RESET_ALL}")
+            tunnel_reader, tunnel_writer = await client_info['tunnel_queue'].get()
+            
+            logger.info(f"{Fore.GREEN}[PUBLIC] Tunnel established for {addr}!{Style.RESET_ALL}")
             
             # Start bidirectional forwarding
             await asyncio.gather(
-                self.forward_data(user_reader, client_writer, f"USER->{addr}"),
-                self.forward_data(client_reader, user_writer, f"CLIENT->{addr}"),
+                self.forward_data(user_reader, tunnel_writer, f"USER[{addr}]->TUNNEL"),
+                self.forward_data(tunnel_reader, user_writer, f"TUNNEL->USER[{addr}]"),
                 return_exceptions=True
             )
             
@@ -87,41 +102,116 @@ class MportServer:
             user_writer.close()
             await user_writer.wait_closed()
     
-    async def handle_client_connection(self, client_reader, client_writer):
+    async def handle_control_connection(self, reader, writer):
         """
-        Handle connection from Mport client.
-        Each client connection is added to queue for next public connection.
+        Handle persistent control connection from Mport client.
+        This connection stays alive and coordinates tunnel creation.
         """
-        addr = client_writer.get_extra_info('peername')
-        logger.info(f"{Fore.MAGENTA}[CLIENT] New Mport client from {addr}{Style.RESET_ALL}")
+        addr = writer.get_extra_info('peername')
+        logger.info(f"{Fore.MAGENTA}[CONTROL] New client from {addr}{Style.RESET_ALL}")
+        
+        client_id = None
         
         try:
-            # Client handshake
-            data = await client_reader.read(1024)
-            
+            # Handshake
+            data = await reader.read(1024)
             if not data:
-                logger.warning(f"{Fore.YELLOW}[CLIENT] Empty handshake{Style.RESET_ALL}")
+                logger.warning(f"{Fore.YELLOW}[CONTROL] Empty handshake{Style.RESET_ALL}")
                 return
             
             message = data.decode('utf-8').strip()
-            logger.info(f"{Fore.CYAN}[CLIENT] Handshake: {message}{Style.RESET_ALL}")
+            logger.info(f"{Fore.CYAN}[CONTROL] Handshake: {message}{Style.RESET_ALL}")
+            
+            # Register client
+            client_id = f"client_{datetime.now().strftime('%H%M%S')}"
+            self.clients[client_id] = {
+                'reader': reader,
+                'writer': writer,
+                'addr': addr,
+                'tunnel_queue': asyncio.Queue(),
+                'connected_at': datetime.now()
+            }
             
             # Send acknowledgment
-            client_id = f"client_{datetime.now().strftime('%H%M%S')}"
-            response = f"MPORT_ACK:{client_id}\n".encode('utf-8')
-            client_writer.write(response)
-            await client_writer.drain()
+            response = json.dumps({
+                'type': 'ACK',
+                'client_id': client_id,
+                'message': 'Control connection established'
+            }) + '\n'
+            writer.write(response.encode('utf-8'))
+            await writer.drain()
             
-            logger.info(f"{Fore.GREEN}[CLIENT] Registered as {client_id}, adding to queue{Style.RESET_ALL}")
+            logger.info(f"{Fore.GREEN}[CONTROL] Registered {client_id}{Style.RESET_ALL}")
             
-            # Add this client to the queue for the next public connection
-            await self.waiting_clients.put((client_reader, client_writer))
-            logger.info(f"{Fore.CYAN}[CLIENT] {client_id} ready for tunnel{Style.RESET_ALL}")
+            # Keep connection alive - listen for responses
+            while True:
+                try:
+                    # Wait for data with timeout
+                    data = await asyncio.wait_for(reader.read(1024), timeout=60.0)
+                    
+                    if not data:
+                        logger.warning(f"{Fore.YELLOW}[CONTROL] {client_id} disconnected{Style.RESET_ALL}")
+                        break
+                    
+                    message = data.decode('utf-8').strip()
+                    if message == 'PONG':
+                        logger.debug(f"{Fore.CYAN}[CONTROL] {client_id} alive{Style.RESET_ALL}")
+                
+                except asyncio.TimeoutError:
+                    # Send ping
+                    try:
+                        writer.write(b"PING\n")
+                        await writer.drain()
+                    except:
+                        logger.warning(f"{Fore.YELLOW}[CONTROL] {client_id} not responding{Style.RESET_ALL}")
+                        break
+                
+                except Exception as e:
+                    logger.error(f"{Fore.RED}[CONTROL] Error: {e}{Style.RESET_ALL}")
+                    break
+        
+        except Exception as e:
+            logger.error(f"{Fore.RED}[CONTROL] Error: {e}{Style.RESET_ALL}")
+        
+        finally:
+            # Cleanup
+            if client_id and client_id in self.clients:
+                del self.clients[client_id]
+                logger.info(f"{Fore.YELLOW}[CONTROL] Disconnected: {client_id}{Style.RESET_ALL}")
+            
+            writer.close()
+            await writer.wait_closed()
+    
+    async def handle_tunnel_connection(self, reader, writer):
+        """
+        Handle tunnel connection from client.
+        Each tunnel is a separate connection for one user.
+        """
+        addr = writer.get_extra_info('peername')
+        logger.info(f"{Fore.BLUE}[TUNNEL] New tunnel connection from {addr}{Style.RESET_ALL}")
+        
+        try:
+            # Read tunnel registration
+            data = await reader.read(1024)
+            if not data:
+                logger.warning(f"{Fore.YELLOW}[TUNNEL] Empty registration{Style.RESET_ALL}")
+                return
+            
+            message = json.loads(data.decode('utf-8').strip())
+            client_id = message.get('client_id')
+            
+            logger.info(f"{Fore.CYAN}[TUNNEL] Registration from {client_id}{Style.RESET_ALL}")
+            
+            if client_id not in self.clients:
+                logger.error(f"{Fore.RED}[TUNNEL] Unknown client: {client_id}{Style.RESET_ALL}")
+                return
+            
+            # Add this tunnel to client's queue
+            await self.clients[client_id]['tunnel_queue'].put((reader, writer))
+            logger.info(f"{Fore.GREEN}[TUNNEL] Added to {client_id} queue{Style.RESET_ALL}")
             
         except Exception as e:
-            logger.error(f"{Fore.RED}[CLIENT] Error: {e}{Style.RESET_ALL}")
-            client_writer.close()
-            await client_writer.wait_closed()
+            logger.error(f"{Fore.RED}[TUNNEL] Error: {e}{Style.RESET_ALL}")
     
     async def start_public_server(self):
         """Start the public-facing server for internet users."""
@@ -138,9 +228,9 @@ class MportServer:
             await server.serve_forever()
     
     async def start_control_server(self):
-        """Start the control server for Mport clients."""
+        """Start the control server for Mport client control connections."""
         server = await asyncio.start_server(
-            self.handle_client_connection,
+            self.handle_control_connection,
             '0.0.0.0',
             self.control_port
         )
@@ -151,23 +241,39 @@ class MportServer:
         async with server:
             await server.serve_forever()
     
+    async def start_tunnel_server(self):
+        """Start the tunnel server for actual data forwarding."""
+        # Use port 8082 for tunnel connections
+        server = await asyncio.start_server(
+            self.handle_tunnel_connection,
+            '0.0.0.0',
+            8082
+        )
+        
+        addr = server.sockets[0].getsockname()
+        logger.info(f"{Fore.BLUE}[TUNNEL SERVER] Listening on {addr}{Style.RESET_ALL}")
+        
+        async with server:
+            await server.serve_forever()
+    
     async def run(self):
-        """Run both servers concurrently."""
+        """Run all servers concurrently."""
         print(f"\n{Fore.CYAN}╔═══════════════════════════════════════════════════════╗{Style.RESET_ALL}")
         print(f"{Fore.CYAN}║   🚀 MPORT SERVER - YOUR PORT TO THE WORLD          ║{Style.RESET_ALL}")
         print(f"{Fore.CYAN}╚═══════════════════════════════════════════════════════╝{Style.RESET_ALL}\n")
         
-        print(f"{Fore.GREEN}Starting Mport Server...{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}Starting Mport Server (Day 3 - Persistent)...{Style.RESET_ALL}")
         print(f"  • Public port:  {self.public_port} (for internet users)")
-        print(f"  • Control port: {self.control_port} (for Mport clients)")
-        print(f"\n{Fore.YELLOW}Phase 1 - Week 1 Day 2: SIMPLIFIED TUNNEL{Style.RESET_ALL}")
-        print(f"{Style.DIM}Each client connection handles ONE user connection{Style.RESET_ALL}")
+        print(f"  • Control port: {self.control_port} (for client control)")
+        print(f"  • Tunnel port:  8082 (for tunnel connections)")
+        print(f"\n{Fore.YELLOW}Week 1 Day 3: Persistent clients + Multiple tunnels{Style.RESET_ALL}")
         print(f"Press Ctrl+C to stop\n")
         
         try:
             await asyncio.gather(
                 self.start_public_server(),
-                self.start_control_server()
+                self.start_control_server(),
+                self.start_tunnel_server()
             )
         except KeyboardInterrupt:
             print(f"\n{Fore.YELLOW}Shutting down Mport Server...{Style.RESET_ALL}")

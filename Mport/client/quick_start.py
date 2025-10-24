@@ -1,5 +1,5 @@
 """
-Quick start client with defaults - no prompts needed.
+Quick start client for Day 3 - no prompts needed.
 """
 import asyncio
 import sys
@@ -14,7 +14,7 @@ from colorama import Fore, Style
 
 async def main():
     """Main entry point with defaults."""
-    print(f"{Fore.CYAN}Mport Client - Using Defaults{Style.RESET_ALL}\n")
+    print(f"{Fore.CYAN}Mport Client Day 3 - Using Defaults{Style.RESET_ALL}\n")
     
     client = MportClient(
         server_host="localhost",

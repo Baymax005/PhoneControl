@@ -1,12 +1,16 @@
 """
 Mport Tunnel Client - "Your Port to the World"
-Phase 1, Week 1 Day 2: SIMPLIFIED - Connect when needed
+Phase 1, Week 1 Day 3: Persistent client with multiple tunnels
 
-This runs on your PC and creates a NEW connection for each tunnel request.
+Architecture:
+- One persistent control connection to server
+- Spawns separate tunnel connections on demand
+- Stays alive 24/7
 """
 
 import asyncio
 import logging
+import json
 from colorama import Fore, Style, init
 
 init(autoreset=True)
@@ -20,16 +24,21 @@ logger = logging.getLogger(__name__)
 
 
 class MportClient:
-    """Simple Mport client - creates one connection per tunnel."""
+    """
+    Production-ready Mport client.
+    - Persistent control connection
+    - Multiple simultaneous tunnels
+    """
     
     def __init__(self, server_host, server_port, local_host, local_port):
         self.server_host = server_host
         self.server_port = server_port
         self.local_host = local_host
         self.local_port = local_port
+        self.client_id = None
         self.running = True
         
-        logger.info(f"{Fore.CYAN}Initializing Mport Client{Style.RESET_ALL}")
+        logger.info(f"{Fore.CYAN}Initializing Mport Client (Day 3){Style.RESET_ALL}")
         logger.info(f"Server: {server_host}:{server_port}")
         logger.info(f"Local service: {local_host}:{local_port}")
     
@@ -55,81 +64,134 @@ class MportClient:
             except:
                 pass
     
-    async def handle_one_tunnel(self):
-        """Create one tunnel: Server <-> Local Service."""
+    async def handle_tunnel_request(self):
+        """
+        Create a new tunnel connection when server needs one.
+        This is spawned as a separate task for each tunnel.
+        """
         try:
-            # 1. Connect to server
-            logger.info(f"{Fore.CYAN}Connecting to server...{Style.RESET_ALL}")
-            server_reader, server_writer = await asyncio.open_connection(
+            # 1. Connect to tunnel port
+            logger.info(f"{Fore.CYAN}[TUNNEL] Connecting to server tunnel port...{Style.RESET_ALL}")
+            tunnel_reader, tunnel_writer = await asyncio.open_connection(
                 self.server_host,
-                self.server_port
+                8082  # Tunnel port
             )
             
-            logger.info(f"{Fore.GREEN}✅ Connected to server{Style.RESET_ALL}")
+            logger.info(f"{Fore.GREEN}[TUNNEL] Connected to server{Style.RESET_ALL}")
             
-            # 2. Send handshake
-            handshake = b"MPORT_CLIENT:HELLO"
-            server_writer.write(handshake)
-            await server_writer.drain()
+            # 2. Register tunnel
+            registration = json.dumps({
+                'type': 'TUNNEL_REGISTER',
+                'client_id': self.client_id
+            }) + '\n'
+            tunnel_writer.write(registration.encode('utf-8'))
+            await tunnel_writer.drain()
             
-            # 3. Get acknowledgment
-            data = await server_reader.read(1024)
-            response = data.decode('utf-8').strip()
+            logger.info(f"{Fore.CYAN}[TUNNEL] Registered with server{Style.RESET_ALL}")
             
-            if response.startswith('MPORT_ACK:'):
-                client_id = response.split(':')[1]
-                logger.info(f"{Fore.GREEN}Registered as: {client_id}{Style.RESET_ALL}")
-            
-            # 4. Connect to local service
-            logger.info(f"{Fore.CYAN}Connecting to local {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+            # 3. Connect to local service
+            logger.info(f"{Fore.CYAN}[TUNNEL] Connecting to local {self.local_host}:{self.local_port}{Style.RESET_ALL}")
             local_reader, local_writer = await asyncio.open_connection(
                 self.local_host,
                 self.local_port
             )
             
-            logger.info(f"{Fore.GREEN}✅ Connected to local service{Style.RESET_ALL}")
-            logger.info(f"{Fore.GREEN}🚀 TUNNEL ACTIVE!{Style.RESET_ALL}")
+            logger.info(f"{Fore.GREEN}[TUNNEL] ✅ Tunnel ACTIVE!{Style.RESET_ALL}")
             
-            # 5. Start bidirectional forwarding
+            # 4. Start bidirectional forwarding
             await asyncio.gather(
-                self.forward_data(server_reader, local_writer, "SERVER->LOCAL"),
-                self.forward_data(local_reader, server_writer, "LOCAL->SERVER"),
+                self.forward_data(tunnel_reader, local_writer, "SERVER->LOCAL"),
+                self.forward_data(local_reader, tunnel_writer, "LOCAL->SERVER"),
                 return_exceptions=True
             )
             
-            logger.info(f"{Fore.YELLOW}Tunnel closed{Style.RESET_ALL}")
+            logger.info(f"{Fore.YELLOW}[TUNNEL] Tunnel closed{Style.RESET_ALL}")
             
-        except ConnectionRefusedError as e:
-            if "8081" in str(e) or self.server_port == 8081:
-                logger.error(f"{Fore.RED}Cannot connect to server {self.server_host}:{self.server_port}{Style.RESET_ALL}")
-                logger.error(f"{Fore.YELLOW}Is the Mport server running?{Style.RESET_ALL}")
-            else:
-                logger.error(f"{Fore.RED}Cannot connect to local {self.local_host}:{self.local_port}{Style.RESET_ALL}")
-                logger.error(f"{Fore.YELLOW}Is your phone connected? Try: adb connect {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+        except ConnectionRefusedError:
+            logger.error(f"{Fore.RED}[TUNNEL] Cannot connect to local {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+            logger.error(f"{Fore.YELLOW}Is your phone connected? Try: adb connect {self.local_host}:{self.local_port}{Style.RESET_ALL}")
         
         except Exception as e:
-            logger.error(f"{Fore.RED}Tunnel error: {e}{Style.RESET_ALL}")
+            logger.error(f"{Fore.RED}[TUNNEL] Error: {e}{Style.RESET_ALL}")
+    
+    async def maintain_control_connection(self):
+        """
+        Maintain persistent control connection to server.
+        This stays alive and spawns tunnels on demand.
+        """
+        while self.running:
+            try:
+                # Connect to control port
+                logger.info(f"{Fore.CYAN}[CONTROL] Connecting to server...{Style.RESET_ALL}")
+                reader, writer = await asyncio.open_connection(
+                    self.server_host,
+                    self.server_port
+                )
+                
+                logger.info(f"{Fore.GREEN}[CONTROL] ✅ Connected to server{Style.RESET_ALL}")
+                
+                # Send handshake
+                handshake = "MPORT_CLIENT:HELLO\n"
+                writer.write(handshake.encode('utf-8'))
+                await writer.drain()
+                
+                # Get acknowledgment
+                data = await reader.read(1024)
+                response = json.loads(data.decode('utf-8').strip())
+                
+                if response.get('type') == 'ACK':
+                    self.client_id = response.get('client_id')
+                    logger.info(f"{Fore.GREEN}[CONTROL] Registered as: {self.client_id}{Style.RESET_ALL}")
+                
+                # Immediately spawn a tunnel (for backward compatibility)
+                asyncio.create_task(self.handle_tunnel_request())
+                
+                # Listen for commands
+                while self.running:
+                    data = await reader.read(1024)
+                    
+                    if not data:
+                        logger.warning(f"{Fore.YELLOW}[CONTROL] Server disconnected{Style.RESET_ALL}")
+                        break
+                    
+                    message = data.decode('utf-8').strip()
+                    
+                    if message == 'PING':
+                        # Respond to ping
+                        writer.write(b"PONG\n")
+                        await writer.drain()
+                    
+                    elif message.startswith('NEW_TUNNEL'):
+                        # Server requests new tunnel
+                        logger.info(f"{Fore.YELLOW}[CONTROL] New tunnel requested{Style.RESET_ALL}")
+                        asyncio.create_task(self.handle_tunnel_request())
+                
+            except ConnectionRefusedError:
+                logger.error(f"{Fore.RED}[CONTROL] Cannot connect to server{Style.RESET_ALL}")
+                logger.error(f"{Fore.YELLOW}Is the server running?{Style.RESET_ALL}")
+            
+            except Exception as e:
+                logger.error(f"{Fore.RED}[CONTROL] Error: {e}{Style.RESET_ALL}")
+            
+            # Reconnect after delay
+            if self.running:
+                logger.info(f"{Fore.CYAN}[CONTROL] Reconnecting in 5 seconds...{Style.RESET_ALL}")
+                await asyncio.sleep(5)
     
     async def run(self):
-        """Keep creating tunnels as needed."""
+        """Run the client."""
         print(f"\n{Fore.CYAN}╔═══════════════════════════════════════════════════════╗{Style.RESET_ALL}")
         print(f"{Fore.CYAN}║   🚀 MPORT CLIENT - YOUR PORT TO THE WORLD          ║{Style.RESET_ALL}")
         print(f"{Fore.CYAN}╚═══════════════════════════════════════════════════════╝{Style.RESET_ALL}\n")
         
-        print(f"{Fore.GREEN}Starting Mport Client...{Style.RESET_ALL}")
+        print(f"{Fore.GREEN}Starting Mport Client (Day 3 - Persistent)...{Style.RESET_ALL}")
         print(f"  • Server:  {self.server_host}:{self.server_port}")
         print(f"  • Local:   {self.local_host}:{self.local_port}")
-        print(f"\n{Fore.YELLOW}Phase 1 - Week 1 Day 2: SIMPLIFIED TUNNEL{Style.RESET_ALL}")
-        print(f"{Style.DIM}Creating new connections as needed{Style.RESET_ALL}")
+        print(f"\n{Fore.YELLOW}Week 1 Day 3: Persistent + Multiple tunnels{Style.RESET_ALL}")
         print(f"Press Ctrl+C to stop\n")
         
         try:
-            while self.running:
-                await self.handle_one_tunnel()
-                
-                if self.running:
-                    logger.info(f"{Fore.CYAN}Waiting 2 seconds before reconnecting...{Style.RESET_ALL}")
-                    await asyncio.sleep(2)
+            await self.maintain_control_connection()
         
         except KeyboardInterrupt:
             print(f"\n{Fore.YELLOW}Stopping client...{Style.RESET_ALL}")
