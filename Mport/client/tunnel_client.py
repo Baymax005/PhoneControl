@@ -82,31 +82,77 @@ class MportClient:
             logger.error(f"Error connecting: {e}")
             return None, None
     
-    async def forward_to_local(self, data):
-        """Forward data to local service (e.g., phone ADB)."""
+    async def forward_data(self, reader_src, writer_dst, direction):
+        """Forward data bidirectionally between connections."""
         try:
-            # Connect to local service
-            local_reader, local_writer = await asyncio.open_connection(
-                self.local_host,
-                self.local_port
-            )
-            
-            # Send data
-            local_writer.write(data)
-            await local_writer.drain()
-            
-            # Read response
-            response = await local_reader.read(4096)
-            
-            # Close local connection
-            local_writer.close()
-            await local_writer.wait_closed()
-            
-            return response
-            
+            while True:
+                data = await reader_src.read(8192)
+                if not data:
+                    break
+                
+                logger.info(f"{Fore.CYAN}[FORWARD {direction}] {len(data)} bytes{Style.RESET_ALL}")
+                writer_dst.write(data)
+                await writer_dst.drain()
+        
         except Exception as e:
-            logger.error(f"Error forwarding to local service: {e}")
-            return None
+            logger.error(f"{Fore.RED}[FORWARD {direction}] Error: {e}{Style.RESET_ALL}")
+        
+        finally:
+            try:
+                writer_dst.close()
+                await writer_dst.wait_closed()
+            except:
+                pass
+    
+    async def handle_server_message(self, server_reader, server_writer):
+        """
+        Handle messages from server.
+        Server will send a signal when a new tunnel connection is needed.
+        """
+        try:
+            while True:
+                # Read data from server
+                data = await server_reader.read(8192)
+                
+                if not data:
+                    logger.warning(f"{Fore.YELLOW}Server closed connection{Style.RESET_ALL}")
+                    break
+                
+                logger.info(f"{Fore.CYAN}[TUNNEL START] Received {len(data)} bytes from server{Style.RESET_ALL}")
+                
+                # Connect to local service NOW
+                try:
+                    logger.info(f"{Fore.CYAN}Connecting to local {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+                    
+                    local_reader, local_writer = await asyncio.open_connection(
+                        self.local_host,
+                        self.local_port
+                    )
+                    
+                    logger.info(f"{Fore.GREEN}✅ Connected to local service{Style.RESET_ALL}")
+                    
+                    # Forward the initial data
+                    local_writer.write(data)
+                    await local_writer.drain()
+                    
+                    # Start bidirectional forwarding
+                    logger.info(f"{Fore.CYAN}Starting bidirectional tunnel{Style.RESET_ALL}")
+                    await asyncio.gather(
+                        self.forward_data(server_reader, local_writer, "SERVER->LOCAL"),
+                        self.forward_data(local_reader, server_writer, "LOCAL->SERVER"),
+                        return_exceptions=True
+                    )
+                    
+                except ConnectionRefusedError:
+                    logger.error(f"{Fore.RED}Cannot connect to {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+                    logger.error(f"{Fore.YELLOW}Is your phone connected? Try: adb connect {self.local_host}:{self.local_port}{Style.RESET_ALL}")
+                    # Send error back to server
+                    error_msg = b"ERROR: Cannot connect to local service\n"
+                    server_writer.write(error_msg)
+                    await server_writer.drain()
+                    
+        except Exception as e:
+            logger.error(f"{Fore.RED}Error handling server message: {e}{Style.RESET_ALL}")
     
     async def run(self):
         """Run the client."""
@@ -127,27 +173,11 @@ class MportClient:
             return
         
         print(f"\n{Fore.GREEN}✅ Tunnel established!{Style.RESET_ALL}")
-        print(f"{Fore.CYAN}Waiting for traffic...{Style.RESET_ALL}\n")
+        print(f"{Fore.CYAN}Waiting for connections from server...{Style.RESET_ALL}\n")
         
         try:
-            # Keep connection alive and handle messages
-            while True:
-                data = await reader.read(4096)
-                
-                if not data:
-                    print(f"\n{Fore.YELLOW}Server disconnected.{Style.RESET_ALL}")
-                    break
-                
-                logger.info(f"Received {len(data)} bytes from server")
-                
-                # Forward to local service
-                response = await self.forward_to_local(data)
-                
-                if response:
-                    # Send response back to server
-                    writer.write(response)
-                    await writer.drain()
-                    logger.info(f"Sent {len(response)} bytes back to server")
+            # Keep connection alive and wait for tunnel requests
+            await self.handle_server_message(reader, writer)
         
         except KeyboardInterrupt:
             print(f"\n{Fore.YELLOW}Stopping client...{Style.RESET_ALL}")
