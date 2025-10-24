@@ -9,7 +9,7 @@ import os
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 # Import the client class
-from tunnel_client_v2 import MportClient
+from tunnel_client import MportClient
 from colorama import Fore, Style
 
 async def main():
