@@ -2,30 +2,42 @@
 
 **Tagline:** *"Your Port to the World"*
 
-## ⏰ Week 2 Status: VPS-AGNOSTIC DEPLOYMENT READY!
+## ⏰ Week 2 Status: DEPLOY NOW IN 5 MINUTES! 🚀
 
 **What We Built:** 2,016+ lines of production-ready code  
 **Test Result:** ✅ Working perfectly with real Android phone (BE2029)  
-**Week 2:** ✅ Universal deployment system - Oracle Cloud FREE, DigitalOcean, AWS, Azure, any VPS!
+**Week 2:** ✅ Fly.io deployment (5 min, no card!) + Traditional VPS support!
 
-### 🌟 NEW: Deploy Anywhere!
+### 🌟 NEW: Two Deployment Options!
 
-**Choose Your Cloud:**
-- ☁️ **Oracle Cloud Always Free** - $0 forever! (Recommended)
-- 💙 **DigitalOcean** - $200 student credit (33 months free)
-- 🟧 **AWS Free Tier** - 12 months free
-- 🔵 **Azure** - $200 credit
-- 🌐 **Any Ubuntu VPS** - Vultr, Linode, etc.
-
-**One Script, Any Cloud:**
+#### Option 1: Quick Testing (5 Minutes, No Card!) ⚡
 ```bash
-# Auto-detects: Oracle/AWS/Azure/DO/Generic
-# Auto-detects: x86_64/ARM64 architecture
-# Auto-installs: Python 3.13 with smart fallbacks
+# Deploy to Fly.io - Start testing NOW!
+flyctl launch
+```
+- ✅ **No credit card** required
+- ✅ **5-minute setup** (vs 30 min traditional VPS)
+- ✅ **Auto HTTPS** (no SSL cert hassle)
+- ✅ **Global CDN** (30+ regions)
+- ✅ **FREE tier:** 256MB RAM, 160GB transfer
+
+**📖 Quick Start Guide:** [`docs/FLY_DEPLOYMENT.md`](docs/FLY_DEPLOYMENT.md) ← **Deploy NOW!**
+
+#### Option 2: Production Later (When Everything Works) 📈
+```bash
+# Deploy to DigitalOcean/Oracle/AWS/Azure
 sudo ./deployment/deploy.sh
 ```
+- ✅ **More RAM:** 1GB (vs 256MB on Fly.io)
+- ✅ **Full control:** SSH access, custom config
+- ✅ **Free options:** Oracle Cloud ($0 forever), DO Student Pack
+- ✅ **Auto-detects:** Cloud provider, architecture, smart Python install
 
-**See:** [`docs/ORACLE_DEPLOYMENT.md`](docs/ORACLE_DEPLOYMENT.md) for FREE forever hosting!
+**📖 VPS Guide:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | **FREE Hosting:** [`docs/ORACLE_DEPLOYMENT.md`](docs/ORACLE_DEPLOYMENT.md)
+
+### 🎯 Recommended Path:
+1. ✅ **Now:** Deploy to Fly.io (test with real users, no card hassle)
+2. 📈 **Later:** Migrate to DigitalOcean (when you need more resources)
 
 ---
 

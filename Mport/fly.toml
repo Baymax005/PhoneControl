@@ -1,0 +1,83 @@
+# Fly.io Application Configuration
+# Mport TCP Tunnel Server
+# https://fly.io/docs/reference/configuration/
+
+app = "mport-tunnel"
+primary_region = "sin"  # Singapore (closest to Pakistan/India)
+
+# Kill signal and grace period
+kill_signal = "SIGINT"
+kill_timeout = "5s"
+
+[experimental]
+  auto_rollback = true
+
+# Build configuration
+[build]
+  dockerfile = "Dockerfile"
+
+# HTTP service (for health checks and future web dashboard)
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = false  # Keep running for tunnels
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  # Health check endpoint
+  [http_service.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+# TCP services for tunnel ports
+# Port 8081: Control port (tunnel management)
+[[services]]
+  protocol = "tcp"
+  internal_port = 8081
+  auto_stop_machines = false
+  auto_start_machines = true
+
+  [[services.ports]]
+    port = 8081
+    handlers = ["tls"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+# Port 8082: Tunnel port (data transfer)
+[[services]]
+  protocol = "tcp"
+  internal_port = 8082
+  auto_stop_machines = false
+  auto_start_machines = true
+
+  [[services.ports]]
+    port = 8082
+    handlers = ["tls"]
+
+  [services.concurrency]
+    type = "connections"
+    hard_limit = 100
+    soft_limit = 80
+
+# VM resources (optimized for Fly.io free tier)
+[vm]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256  # Free tier limit
+
+# Environment variables
+[env]
+  PORT = "8080"
+  CONTROL_PORT = "8081"
+  TUNNEL_PORT = "8082"
+  PYTHONUNBUFFERED = "1"
+
+# Metrics (optional, for monitoring)
+[metrics]
+  port = 9091
+  path = "/metrics"

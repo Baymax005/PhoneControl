@@ -26,28 +26,45 @@
 
 **Choose your deployment platform:**
 
-| Feature | **Oracle Cloud FREE** | DigitalOcean Student | AWS Free Tier | Azure | Vultr/Linode |
-|---------|----------------------|---------------------|---------------|-------|--------------|
-| **Cost** | ✅ **$0 forever** | $200 credit (33mo) | 12 months free | $200 credit | $5-10/month |
-| **After Credits** | ✅ **Still free** | $6/month | $10-15/month | Pay as you go | $5-10/month |
-| **RAM** | 1 GB | 1 GB | 1 GB | 1 GB | 1-2 GB |
-| **CPU** | 1 OCPU (AMD) | 1 vCPU | 1 vCPU | 1 vCPU | 1 vCPU |
-| **Storage** | 50 GB | 25 GB SSD | 30 GB | 64 GB | 25-50 GB |
-| **Transfer** | 10 TB/month | 1 TB/month | 15 GB/month | 15 GB/month | 1-2 TB/month |
-| **Public IP** | ✅ Free | ✅ Included | ✅ Free (12mo) | ✅ Included | ✅ Included |
-| **Setup Time** | 15-30 min | 5-10 min | 15 min | 20 min | 5-10 min |
-| **Complexity** | Medium | Low | Medium | Medium | Low |
-| **ARM Support** | ✅ 4 ARM cores | ❌ No | ✅ Graviton | ❌ No | ❌ No |
-| **Best For** | **Long-term FREE** | Quick start | AWS ecosystem | Azure users | Simple VPS |
+### Quick Comparison Table
+
+| Feature | **Fly.io** | **Oracle Cloud** | DigitalOcean | Traditional VPS |
+|---------|-----------|------------------|--------------|-----------------|
+| **Cost** | ✅ **$0 (free tier)** | $0 forever | $200 credit | $5-10/month |
+| **Setup Time** | ✅ **5 minutes** | 15-30 min | 10 min | 15-20 min |
+| **Card Required** | ✅ **No** | ⚠️ Yes (verification) | Yes | Yes |
+| **RAM** | 256MB (3 VMs) | 1 GB | 1 GB | 1-2 GB |
+| **Storage** | 3 GB | 50 GB | 25 GB | 25-50 GB |
+| **Transfer** | 160 GB/month | 10 TB/month | 1 TB/month | 1-2 TB/month |
+| **HTTPS** | ✅ **Auto** | Manual (Certbot) | Manual | Manual |
+| **Global CDN** | ✅ **30+ regions** | 8 regions | 15 regions | 1 region |
+| **Containerized** | ✅ **Yes (Docker)** | Optional | Optional | Optional |
+| **Best For** | ✅ **Testing NOW!** | Long-term | Production | Custom needs |
+
+### 🎯 Deployment Strategy (Recommended)
+
+**Phase 1: Quick Testing (RIGHT NOW)**
+- 🚀 **Use Fly.io** - Deploy in 5 minutes, no card needed
+- ✅ Test with real users
+- ✅ Validate your code works on internet
+- ✅ Get feedback quickly
+
+**Phase 2: Production (When Everything Works)**
+- 📈 **Migrate to DigitalOcean** - Better resources, $6/month (or use $200 credit)
+- ✅ More RAM (1GB vs 256MB)
+- ✅ More control (full VPS access)
+- ✅ Easy migration path
 
 ### 🏆 Recommendations:
 
-1. **Best FREE option:** **Oracle Cloud Always Free** → Never expires!
-2. **Fastest setup:** DigitalOcean → 5 minutes, simple UI
-3. **Best for learning:** Oracle Cloud → Real production experience, free forever
-4. **If you need more resources:** Upgrade to paid tier on any provider
+1. ✅ **Start with Fly.io** → Test NOW without card hassles! ([Guide](./FLY_DEPLOYMENT.md))
+2. 📈 **Move to DigitalOcean later** → When you need more resources
+3. 🆓 **Oracle Cloud** → If DO credits run out (free forever)
 
-**📖 See detailed Oracle Cloud guide:** [`docs/ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
+**📖 Deployment Guides:**
+- **Quick Start (5 min):** [`docs/FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md) ← **Start here!**
+- **Traditional VPS:** [`deployment/deploy.sh`](../deployment/deploy.sh) (Oracle, DO, AWS, Azure)
+- **Oracle Cloud Details:** [`docs/ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
 
 ---
 
