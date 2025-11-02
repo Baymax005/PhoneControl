@@ -1,35 +1,66 @@
 # Mport Deployment Guide
-# Week 2: VPS Deployment with HTTPS/Nginx Wrapper
+# Week 2: Universal VPS Deployment with HTTPS/Nginx Wrapper
 
-**Status:** Ready for deployment  
-**Target:** DigitalOcean VPS (Bangalore, India)  
+**Status:** Ready for deployment (multi-cloud support)  
+**Supported Providers:** Oracle Cloud (FREE), DigitalOcean, AWS, Azure, Vultr, Linode, any Ubuntu VPS  
 **Domain:** mport.app  
-**Cost:** FREE with GitHub Student Pack ($200 credit)
+**Cost:** FREE (Oracle Cloud Always Free) or with Student Pack credits
 
 ---
 
 ## 📋 Table of Contents
 
-1. [Prerequisites](#prerequisites)
-2. [Architecture Overview](#architecture-overview)
-3. [Quick Deployment](#quick-deployment)
-4. [Manual Deployment](#manual-deployment)
-5. [Testing](#testing)
-6. [Monitoring](#monitoring)
-7. [Troubleshooting](#troubleshooting)
-8. [Maintenance](#maintenance)
+1. [Cloud Provider Comparison](#cloud-provider-comparison)
+2. [Prerequisites](#prerequisites)
+3. [Architecture Overview](#architecture-overview)
+4. [Quick Deployment](#quick-deployment)
+5. [Manual Deployment](#manual-deployment)
+6. [Testing](#testing)
+7. [Monitoring](#monitoring)
+8. [Troubleshooting](#troubleshooting)
+9. [Maintenance](#maintenance)
+
+---
+
+## ☁️ Cloud Provider Comparison
+
+**Choose your deployment platform:**
+
+| Feature | **Oracle Cloud FREE** | DigitalOcean Student | AWS Free Tier | Azure | Vultr/Linode |
+|---------|----------------------|---------------------|---------------|-------|--------------|
+| **Cost** | ✅ **$0 forever** | $200 credit (33mo) | 12 months free | $200 credit | $5-10/month |
+| **After Credits** | ✅ **Still free** | $6/month | $10-15/month | Pay as you go | $5-10/month |
+| **RAM** | 1 GB | 1 GB | 1 GB | 1 GB | 1-2 GB |
+| **CPU** | 1 OCPU (AMD) | 1 vCPU | 1 vCPU | 1 vCPU | 1 vCPU |
+| **Storage** | 50 GB | 25 GB SSD | 30 GB | 64 GB | 25-50 GB |
+| **Transfer** | 10 TB/month | 1 TB/month | 15 GB/month | 15 GB/month | 1-2 TB/month |
+| **Public IP** | ✅ Free | ✅ Included | ✅ Free (12mo) | ✅ Included | ✅ Included |
+| **Setup Time** | 15-30 min | 5-10 min | 15 min | 20 min | 5-10 min |
+| **Complexity** | Medium | Low | Medium | Medium | Low |
+| **ARM Support** | ✅ 4 ARM cores | ❌ No | ✅ Graviton | ❌ No | ❌ No |
+| **Best For** | **Long-term FREE** | Quick start | AWS ecosystem | Azure users | Simple VPS |
+
+### 🏆 Recommendations:
+
+1. **Best FREE option:** **Oracle Cloud Always Free** → Never expires!
+2. **Fastest setup:** DigitalOcean → 5 minutes, simple UI
+3. **Best for learning:** Oracle Cloud → Real production experience, free forever
+4. **If you need more resources:** Upgrade to paid tier on any provider
+
+**📖 See detailed Oracle Cloud guide:** [`docs/ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
 
 ---
 
 ## 🎯 Prerequisites
 
-### 1. GitHub Student Pack
+### 1. GitHub Student Pack (Optional but Recommended)
 - Sign up: https://education.github.com/pack
 - Get $200 DigitalOcean credit (12 months)
 - Get free .app domain from Name.com
+- **Note:** Oracle Cloud Always Free doesn't require student pack!
 
 ### 2. Domain Setup
-1. Claim **mport.app** from Name.com (Student Pack)
+1. Claim **mport.app** from Name.com (Student Pack) OR use your own domain
 2. Point DNS to VPS IP:
    ```
    A Record:  @     → YOUR_VPS_IP
@@ -38,14 +69,26 @@
    ```
 3. Wait 5-60 minutes for DNS propagation
 
-### 3. DigitalOcean VPS
+### 3. Choose & Create VPS
+
+**Option A: Oracle Cloud (FREE FOREVER)** ⭐ Recommended
+- **Size:** VM.Standard.E2.1.Micro (Always Free)
+- **CPU:** 1 OCPU (x86_64 AMD) or 4 OCPU (ARM64 Ampere)
+- **RAM:** 1 GB (x86) or 24 GB total (ARM - 4 instances)
+- **Storage:** 200 GB total
+- **Transfer:** 10 TB/month
+- **OS:** Ubuntu 22.04 LTS
+- **Datacenter:** Mumbai, India (closest to Pakistan)
+- **Guide:** See [`ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
+
+**Option B: DigitalOcean (Student Pack)**
 - **Size:** Basic ($6/month) - FREE with credit
 - **CPU:** 1 vCPU
 - **RAM:** 1 GB
 - **Storage:** 25 GB SSD
 - **Transfer:** 1 TB
 - **OS:** Ubuntu 22.04 LTS x64
-- **Datacenter:** Bangalore, India (BLR1) - closest to Pakistan
+- **Datacenter:** Bangalore, India (BLR1)
 
 ---
 
