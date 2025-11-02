@@ -161,10 +161,13 @@ ufw allow 22/tcp comment 'SSH'
 ufw allow 80/tcp comment 'HTTP'
 ufw allow 443/tcp comment 'HTTPS'
 
-# Allow Mport ports (optional - for direct access)
-ufw allow 8080/tcp comment 'Mport Public'
-ufw allow 8081/tcp comment 'Mport Control'
-ufw allow 8082/tcp comment 'Mport Tunnel'
+# Allow Mport HTTPS-wrapped ports (TLS stream)
+ufw allow 8090/tcp comment 'Mport Public (TLS)'
+ufw allow 8091/tcp comment 'Mport Control (TLS)'
+ufw allow 8092/tcp comment 'Mport Tunnel (TLS)'
+
+# Internal ports (localhost only - no firewall rule needed)
+# 8080, 8081, 8082 only accessible via nginx proxy
 
 # Enable firewall
 ufw --force enable
@@ -178,11 +181,11 @@ echo ""
 ##############################################################################
 echo -e "${BLUE}🌐 Step 7/10: Configuring Nginx...${NC}"
 
-# Copy Nginx config
-cp "$MPORT_DIR/Mport/deployment/nginx.conf" /etc/nginx/sites-available/mport
+# Backup original nginx.conf
+cp /etc/nginx/nginx.conf /etc/nginx/nginx.conf.backup
 
-# Create symlink
-ln -sf /etc/nginx/sites-available/mport /etc/nginx/sites-enabled/mport
+# Copy Nginx config (TCP stream + HTTP)
+cp "$MPORT_DIR/Mport/deployment/nginx-stream.conf" /etc/nginx/nginx.conf
 
 # Remove default site
 rm -f /etc/nginx/sites-enabled/default
@@ -347,10 +350,10 @@ echo -e "   🌐 Website: ${GREEN}https://$DOMAIN${NC}"
 echo -e "   🔒 SSL: ${GREEN}Enabled (Let's Encrypt)${NC}"
 echo -e "   📊 Status: ${GREEN}https://$DOMAIN/health${NC}"
 echo ""
-echo -e "${CYAN}📡 API Endpoints:${NC}"
-echo -e "   Control: ${GREEN}https://$DOMAIN/api/control${NC}"
-echo -e "   Tunnel:  ${GREEN}https://$DOMAIN/tunnel/${NC}"
-echo -e "   Connect: ${GREEN}https://$DOMAIN/connect${NC}"
+echo -e "${CYAN}📡 TLS-wrapped TCP Ports:${NC}"
+echo -e "   Control: ${GREEN}$DOMAIN:8091${NC} (wraps 8081)"
+echo -e "   Tunnel:  ${GREEN}$DOMAIN:8092${NC} (wraps 8082)"
+echo -e "   Public:  ${GREEN}$DOMAIN:8090${NC} (wraps 8080)"
 echo ""
 echo -e "${CYAN}🔧 Service Management:${NC}"
 echo -e "   Status:  ${YELLOW}sudo systemctl status mport${NC}"
@@ -362,8 +365,9 @@ echo -e "${CYAN}🔥 Firewall Status:${NC}"
 ufw status numbered | head -10
 echo ""
 echo -e "${CYAN}✅ Next Steps:${NC}"
-echo -e "   1. Test: ${YELLOW}curl https://$DOMAIN/health${NC}"
-echo -e "   2. Connect client: ${YELLOW}python client/tunnel_client.py --server $DOMAIN${NC}"
-echo -e "   3. Monitor logs: ${YELLOW}tail -f $LOG_DIR/server.log${NC}"
+echo -e "   1. Test web: ${YELLOW}curl https://$DOMAIN/health${NC}"
+echo -e "   2. Test API: ${YELLOW}curl https://$DOMAIN/api${NC}"
+echo -e "   3. Connect client: ${YELLOW}python client/tunnel_client.py --server $DOMAIN --port 8091${NC}"
+echo -e "   4. Monitor logs: ${YELLOW}tail -f $LOG_DIR/server.log${NC}"
 echo ""
 echo -e "${GREEN}🚀 Your port to the world is now online!${NC}\n"
