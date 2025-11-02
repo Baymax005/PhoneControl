@@ -43,28 +43,30 @@
 
 ### 🎯 Deployment Strategy (Recommended)
 
-**Phase 1: Quick Testing (RIGHT NOW)**
-- 🚀 **Use Fly.io** - Deploy in 5 minutes, no card needed
-- ✅ Test with real users
-- ✅ Validate your code works on internet
-- ✅ Get feedback quickly
+**Phase 1: Quick Testing (RIGHT NOW - NO CARD!)**
+- 🎉 **Use Replit** - Deploy in 3 minutes, **NO credit card needed!**
+- ✅ Sign up with GitHub (no verification)
+- ✅ Import repo and click Run
+- ✅ Test with real users immediately
+- ✅ Free forever or $7/month for better performance
 
-**Phase 2: Production (When Everything Works)**
-- 📈 **Migrate to DigitalOcean** - Better resources, $6/month (or use $200 credit)
-- ✅ More RAM (1GB vs 256MB)
+**Phase 2: Production (When You Get Card/Credits)**
+- 📈 **Migrate to DigitalOcean** - Better resources, $6/month (or use $200 student credit)
+- ✅ More RAM (1GB dedicated vs shared on Replit)
+- ✅ Better performance (dedicated CPU)
 - ✅ More control (full VPS access)
 - ✅ Easy migration path
 
 ### 🏆 Recommendations:
 
-1. ✅ **Start with Fly.io** → Test NOW without card hassles! ([Guide](./FLY_DEPLOYMENT.md))
-2. 📈 **Move to DigitalOcean later** → When you need more resources
-3. 🆓 **Oracle Cloud** → If DO credits run out (free forever)
+1. ✅ **Start with Replit** → Test NOW without ANY card! ([Guide](./REPLIT_DEPLOYMENT.md)) ← **NO CARD!**
+2. 📈 **Move to DigitalOcean later** → When you get student credits
+3. 🆓 **Oracle Cloud** → If DO credits run out (free forever, but needs card)
 
 **📖 Deployment Guides:**
-- **Quick Start (5 min):** [`docs/FLY_DEPLOYMENT.md`](./FLY_DEPLOYMENT.md) ← **Start here!**
-- **Traditional VPS:** [`deployment/deploy.sh`](../deployment/deploy.sh) (Oracle, DO, AWS, Azure)
-- **Oracle Cloud Details:** [`docs/ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
+- **🎉 NO CARD (3 min):** [`docs/REPLIT_DEPLOYMENT.md`](./REPLIT_DEPLOYMENT.md) ← **Start here!**
+- **Traditional VPS (needs card):** [`deployment/deploy.sh`](../deployment/deploy.sh) (Oracle, DO, AWS, Azure)
+- **Oracle Cloud (needs card):** [`docs/ORACLE_DEPLOYMENT.md`](./ORACLE_DEPLOYMENT.md)
 
 ---
 

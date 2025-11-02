@@ -1,0 +1,37 @@
+# Replit Configuration for Mport TCP Tunnel Server
+# Runs the server automatically when Repl starts
+
+run = "python3 server/tunnel_server.py --host 0.0.0.0"
+
+# Language and environment
+language = "python3"
+entrypoint = "server/tunnel_server.py"
+
+# Modules (Replit package manager)
+[nix]
+channel = "stable-23_11"
+
+# Deployment configuration
+[deployment]
+run = ["python3", "server/tunnel_server.py", "--host", "0.0.0.0"]
+deploymentTarget = "cloudrun"
+
+# Environment variables
+[env]
+PYTHONUNBUFFERED = "1"
+PORT = "8080"
+CONTROL_PORT = "8081"
+TUNNEL_PORT = "8082"
+
+# Port exposure (Replit will automatically expose these)
+[[ports]]
+localPort = 8080
+externalPort = 80
+
+[[ports]]
+localPort = 8081
+externalPort = 8081
+
+[[ports]]
+localPort = 8082
+externalPort = 8082

@@ -2,42 +2,45 @@
 
 **Tagline:** *"Your Port to the World"*
 
-## ⏰ Week 2 Status: DEPLOY NOW IN 5 MINUTES! 🚀
+## ⏰ Week 2 Status: DEPLOY NOW - NO CARD NEEDED! 🎉
 
 **What We Built:** 2,016+ lines of production-ready code  
 **Test Result:** ✅ Working perfectly with real Android phone (BE2029)  
-**Week 2:** ✅ Fly.io deployment (5 min, no card!) + Traditional VPS support!
+**Week 2:** ✅ **Replit deployment (3 min, NO CARD!)** + Traditional VPS support!
 
-### 🌟 NEW: Two Deployment Options!
+### 🌟 NEW: Deploy WITHOUT Credit Card!
 
-#### Option 1: Quick Testing (5 Minutes, No Card!) ⚡
+#### Option 1: Replit (3 Minutes, NO CARD!) 🎉
 ```bash
-# Deploy to Fly.io - Start testing NOW!
-flyctl launch
+# Just import from GitHub and click Run!
+# 1. Go to replit.com/signup (sign up with GitHub)
+# 2. Import: github.com/Baymax005/PhoneControl
+# 3. Click "Run" button
+# Done! Your server is live! 🚀
 ```
-- ✅ **No credit card** required
-- ✅ **5-minute setup** (vs 30 min traditional VPS)
-- ✅ **Auto HTTPS** (no SSL cert hassle)
-- ✅ **Global CDN** (30+ regions)
-- ✅ **FREE tier:** 256MB RAM, 160GB transfer
+- ✅ **NO credit card** - Just email/GitHub signup
+- ✅ **3-minute setup** - Import and run!
+- ✅ **Always-on** - Use UptimeRobot (free) to keep alive
+- ✅ **Auto HTTPS** - Public URLs included
+- ✅ **FREE forever** - Or $7/month for Reserved VM
 
-**📖 Quick Start Guide:** [`docs/FLY_DEPLOYMENT.md`](docs/FLY_DEPLOYMENT.md) ← **Deploy NOW!**
+**📖 Quick Start Guide:** [`docs/REPLIT_DEPLOYMENT.md`](docs/REPLIT_DEPLOYMENT.md) ← **Deploy NOW!**
 
-#### Option 2: Production Later (When Everything Works) 📈
+#### Option 2: Production Later (When You Get Card/Credits) 📈
 ```bash
-# Deploy to DigitalOcean/Oracle/AWS/Azure
+# Deploy to DigitalOcean/Oracle/Fly.io
 sudo ./deployment/deploy.sh
 ```
-- ✅ **More RAM:** 1GB (vs 256MB on Fly.io)
-- ✅ **Full control:** SSH access, custom config
-- ✅ **Free options:** Oracle Cloud ($0 forever), DO Student Pack
-- ✅ **Auto-detects:** Cloud provider, architecture, smart Python install
+- ✅ **More RAM:** 1GB (vs ~500MB on Replit free)
+- ✅ **Better performance:** Dedicated resources
+- ✅ **Student credits:** DO $200, Fly.io free tier
+- ✅ **Full control:** SSH, Nginx, custom config
 
-**📖 VPS Guide:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | **FREE Hosting:** [`docs/ORACLE_DEPLOYMENT.md`](docs/ORACLE_DEPLOYMENT.md)
+**📖 VPS Guides:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) | [`docs/ORACLE_DEPLOYMENT.md`](docs/ORACLE_DEPLOYMENT.md)
 
 ### 🎯 Recommended Path:
-1. ✅ **Now:** Deploy to Fly.io (test with real users, no card hassle)
-2. 📈 **Later:** Migrate to DigitalOcean (when you need more resources)
+1. ✅ **RIGHT NOW:** Deploy to Replit (test for free, no card!)
+2. 📈 **LATER:** Migrate to DigitalOcean when you get student credits
 
 ---
 
